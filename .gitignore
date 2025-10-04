@@ -1,0 +1,40 @@
+# Application-specific configuration
+.env
+!.env.template
+
+# Logs
+logs/
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+.tmp/
+.temp/
+
+# Editor directories and files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Application specific (customize as needed)
+node_modules/
+__pycache__/
+*.pyc
+dist/
+build/
+out/
+data/
+uploads/
+storage/
