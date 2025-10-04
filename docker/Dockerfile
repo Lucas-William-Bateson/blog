@@ -1,39 +1,46 @@
-# Multi-stage build for production optimization
-FROM alpine:3.21.3 AS base
+# Multi-stage build for Astro blog
+FROM node:20-alpine AS builder
+
+# Install build dependencies
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies
+RUN npm ci
+
+# Copy source files
+COPY . .
+
+# Build the Astro site
+RUN npm run build
+
+# Production stage - serve static files with nginx
+FROM nginx:alpine AS runtime
 
 # Add metadata labels
-LABEL maintainer="${MAINTAINER_EMAIL:-your-email@example.com}"
-LABEL project="${APP_NAME:-myproject}"
-LABEL version="${VERSION:-1.0.0}"
-LABEL description="Mini deploy template application"
+LABEL maintainer="lucas@l3s.me"
+LABEL project="blog.l3s.me"
+LABEL version="1.0.0"
+LABEL description="Personal blog powered by Astro"
 
-# Install necessary packages and create non-root user
-RUN apk add --no-cache wget curl && \
-    addgroup -g 1001 -S appgroup && \
-    adduser -S appuser -u 1001 -G appgroup
+# Copy built static files from builder
+COPY --from=builder /app/dist /usr/share/nginx/html
 
-# Set working directory and change ownership to non-root user
-WORKDIR /app
-RUN chown -R appuser:appgroup /app
+# Copy custom nginx configuration
+COPY docker/nginx.conf /etc/nginx/conf.d/default.conf
 
-# Copy application files (if any)
-# COPY . /app
+# Create non-root user for nginx
+RUN addgroup -g 101 -S nginx || true && \
+    adduser -S -D -H -u 101 -h /var/cache/nginx -s /sbin/nologin -G nginx -g nginx nginx || true
 
-# Switch to non-root user
-USER appuser
-
-# Expose port
-EXPOSE ${APP_PORT:-8000}
+# Expose port 80
+EXPOSE 80
 
 # Add health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD wget --quiet --tries=1 --spider http://localhost:${APP_PORT:-8000} || exit 1
+    CMD wget --quiet --tries=1 --spider http://localhost:80/ || exit 1
 
-# Default command
-CMD ["sh", "-c", "echo 'Application starting on port ${APP_PORT:-8000}...' && \
-     echo 'This is a test Docker container for ${APP_NAME:-myproject}' && \
-     echo 'Container is healthy and running' && \
-     while true; do \
-       echo 'Service is running...' && \
-       sleep 30; \
-     done"]
+# Start nginx
+CMD ["nginx", "-g", "daemon off;"]

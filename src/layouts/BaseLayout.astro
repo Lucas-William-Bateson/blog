@@ -1,0 +1,68 @@
+---
+export interface Props {
+  title: string;
+  description: string;
+  image?: string;
+  type?: 'website' | 'article';
+  pubDate?: Date;
+}
+
+const { title, description, image, type = 'website', pubDate } = Astro.props;
+const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+---
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <meta name="generator" content={Astro.generator} />
+    
+    <link rel="canonical" href={canonicalURL} />
+    
+    <title>{title}</title>
+    <meta name="title" content={title} />
+    <meta name="description" content={description} />
+    
+    <meta property="og:type" content={type} />
+    <meta property="og:url" content={canonicalURL} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    {image && <meta property="og:image" content={new URL(image, Astro.site).toString()} />}
+    
+    <meta property="twitter:card" content={image ? "summary_large_image" : "summary"} />
+    <meta property="twitter:url" content={canonicalURL} />
+    <meta property="twitter:title" content={title} />
+    <meta property="twitter:description" content={description} />
+    {image && <meta property="twitter:image" content={new URL(image, Astro.site).toString()} />}
+    
+    {pubDate && (
+      <meta property="article:published_time" content={pubDate.toISOString()} />
+    )}
+    
+    <link rel="alternate" type="application/rss+xml" title="RSS Feed" href="/rss.xml" />
+  </head>
+  <body class="bg-white text-gray-900 min-h-screen flex flex-col">
+    <header class="border-b border-gray-200">
+      <nav class="max-w-4xl mx-auto px-4 py-6 flex justify-between items-center">
+        <a href="/" class="text-xl font-bold text-gray-900 hover:text-blue-600 transition-colors">
+          blog.l3s.me
+        </a>
+        <div class="flex gap-6">
+          <a href="/rss.xml" class="text-gray-600 hover:text-gray-900 transition-colors">RSS</a>
+        </div>
+      </nav>
+    </header>
+    
+    <main class="flex-1 max-w-4xl mx-auto px-4 py-12 w-full">
+      <slot />
+    </main>
+    
+    <footer class="border-t border-gray-200 mt-12">
+      <div class="max-w-4xl mx-auto px-4 py-8 text-center text-gray-600 text-sm">
+        <p>&copy; {new Date().getFullYear()} Lucas William Bateson. All rights reserved.</p>
+      </div>
+    </footer>
+  </body>
+</html>
