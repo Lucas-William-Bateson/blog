@@ -21,9 +21,9 @@ FROM nginx:alpine AS runtime
 
 # Add metadata labels
 LABEL maintainer="lucas@l3s.me"
-LABEL project="blog.l3s.me"
+LABEL project="notes.l3s.me"
 LABEL version="1.0.0"
-LABEL description="Personal blog powered by Astro"
+LABEL description="Personal notes powered by Astro"
 
 # Copy built static files from builder
 COPY --from=builder /app/dist /usr/share/nginx/html
